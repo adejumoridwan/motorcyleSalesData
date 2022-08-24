@@ -1,0 +1,115 @@
+---
+title: "Motorcycle analysis"
+author: "Adejumo Ridwan Suleiman"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Load Libraries
+```{r}
+library(tidyverse)
+```
+
+## Read the Data
+```{r}
+sales <- read_csv("~/DataScieneProjects-Collections/Motorcycle Analysis/sales data.csv")
+
+head(sales)
+```
+```{r}
+skimr::skim(sales)
+```
+
+## Total Sales for each payment method
+```{r}
+sales %>% 
+  group_by(payment) %>% 
+  summarize(total = sum(total)) 
+```
+```{r}
+sales %>% 
+  group_by(payment) %>% 
+  summarize(total = sum(total)) %>% 
+  mutate(perc_sales = (total/sum(total))*100) %>% 
+  ggplot(aes(x = reorder(payment, perc_sales), y = perc_sales, fill = payment)) +
+  geom_col() +
+  geom_text(aes(label = scales::comma(perc_sales))) +
+  xlab("Payment Method") +
+  ylab("Percentage of total Sales")
+```
+
+## Average unit price for each product line
+
+```{r}
+sales %>% 
+  group_by(product_line) %>% 
+  summarize(avg_unit_price = mean(unit_price)) %>% 
+  arrange(desc(avg_unit_price))
+```
+
+
+```{r}
+sales %>% 
+  group_by(product_line) %>% 
+  summarize(avg_unit_price = mean(unit_price)) %>% 
+  arrange(desc(avg_unit_price)) %>% 
+  ggplot(aes(x = reorder(product_line, avg_unit_price), 
+             y = avg_unit_price, fill = product_line)) +
+  geom_col() +
+  geom_text(aes(label = scales::comma(avg_unit_price))) +
+  coord_flip() +
+  xlab("Product Line") +
+  ylab("Average Unit Price")
+```
+
+## Average Purchase price by client type
+```{r}
+sales %>% 
+  group_by(client_type) %>% 
+  summarize(avg_pur_value = sum(total)/sum(quantity)) 
+```
+
+## Total Purchase value by Product line
+```{r}
+sales %>% 
+  group_by(product_line) %>% 
+  summarize(total_sales = sum(total)) %>% 
+  mutate(perc_sales = total_sales/sum(total_sales)*100)
+```
+
+```{r}
+sales %>% 
+  group_by(product_line) %>% 
+  summarize(total_sales = sum(total)) %>% 
+  mutate(perc_sales = total_sales/sum(total_sales)*100) %>% 
+  ggplot(aes(x = reorder(product_line, perc_sales), 
+             y = perc_sales, fill = product_line)) +
+  geom_col() + 
+  coord_flip() +
+  geom_text(aes(label = scales::comma(perc_sales))) +
+  xlab("Product Line") +
+  ylab("Percentage of total sales")
+```
+
+## Month with the highest total sales
+```{r}
+sales %>%
+  group_by(month = lubridate::month(date, label = T)) %>% 
+  summarize(total = sum(total)) %>% 
+  arrange(desc(total))
+```
+
+## Warehouse with the highest total sales
+```{r}
+sales %>% 
+  group_by(warehouse) %>% 
+  summarize(total_sales = sum(total)) %>% 
+  mutate(perc_sales = (total_sales/sum(total_sales))*100) %>% 
+  ggplot(aes(x = reorder(warehouse, perc_sales),
+             y = perc_sales, fill = warehouse)) +
+  geom_col() +
+  xlab("Warehouse") +
+  ylab("Percentage of total sales") +
+  geom_text(aes(label = scales::comma(perc_sales)))
+```
+
